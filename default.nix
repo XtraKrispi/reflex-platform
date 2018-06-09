@@ -138,15 +138,6 @@ let iosSupport =
       };
     inherit (nixpkgs.stdenv.lib) optional optionals;
     optionalExtension = cond: overlay: if cond then overlay else _: _: {};
-    applyPatch = patch: src: nixpkgs.runCommand "applyPatch" {
-      inherit src patch;
-    } ''
-      cp -r "$src" "$out"
-
-      cd "$out"
-      chmod -R +w .
-      patch -p1 <"$patch"
-    '';
 in with haskellLib;
 let overrideCabal = pkg: f: if pkg == null then null else haskellLib.overrideCabal pkg f;
     replaceSrc = pkg: src: version: overrideCabal pkg (drv: {
