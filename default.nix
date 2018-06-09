@@ -15,12 +15,6 @@ let iosSupport =
       if system != "x86_64-darwin" then false
       else if iosSupportForce || builtins.pathExists iosSdkLocation then true
       else builtins.trace "Warning: No iOS sdk found at ${iosSdkLocation}; iOS support disabled.  To enable, either install a version of Xcode that provides that SDK or override the value of iosSdkVersion to match your installed version." false;
-    globalOverlay = self: super: {
-      all-cabal-hashes = fetchurl {
-        url = https://github.com/commercialhaskell/all-cabal-hashes/archive/c7af4479644dd1657df956dd7575b070c1e30d83.tar.gz;
-        sha256 = "1aw6lcyjlfcpk74al489gds4vr4709d0rpchrr0lysrpk7mk2a7g";
-      };
-    };
     appleLibiconvHack = self: super: {
       darwin = super.darwin // {
         libiconv =
@@ -34,7 +28,6 @@ let iosSupport =
     };
     nixpkgs = nixpkgsFunc ({
       inherit system;
-      overlays = [globalOverlay];
       config = {
         allowUnfree = true;
         allowBroken = true; # GHCJS is marked broken in 011c149ed5e5a336c3039f0b9d4303020cff1d86
@@ -53,13 +46,11 @@ let iosSupport =
       android = nixpkgs.lib.mapAttrs (_: args: if args == null then null else nixpkgsFunc args) rec {
         aarch64 = {
           system = "x86_64-linux";
-          overlays = [globalOverlay];
           crossSystem = nixpkgs.lib.systems.examples.aarch64-android-prebuilt;
           config.allowUnfree = true;
         };
         aarch32 = {
           system = "x86_64-linux";
-          overlays = [globalOverlay];
           crossSystem = nixpkgs.lib.systems.examples.armv7a-android-prebuilt;
           config.allowUnfree = true;
         };
@@ -104,7 +95,7 @@ let iosSupport =
         in nixpkgs.lib.mapAttrs (_: args: if args == null then null else nixpkgsFunc args) rec {
         simulator64 = {
           system = "x86_64-darwin";
-          overlays = [globalOverlay appleLibiconvHack];
+          overlays = [appleLibiconvHack];
           crossSystem = nixpkgs.lib.systems.examples.iphone64-simulator // {
             sdkVer = iosSdkVersion;
           };
@@ -112,7 +103,7 @@ let iosSupport =
         };
         aarch64 = {
           system = "x86_64-darwin";
-          overlays = [globalOverlay appleLibiconvHack];
+          overlays = [appleLibiconvHack];
           crossSystem = nixpkgs.lib.systems.examples.iphone64 // {
             sdkVer = iosSdkVersion;
           };
@@ -120,7 +111,7 @@ let iosSupport =
         };
         aarch32 = {
           system = "x86_64-darwin";
-          overlays = [globalOverlay appleLibiconvHack ];
+          overlays = [appleLibiconvHack];
           crossSystem = nixpkgs.lib.systems.examples.iphone32 // {
             sdkVer = iosSdkVersion;
           };
